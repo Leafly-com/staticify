@@ -19,7 +19,8 @@ const staticify = (root, options) => {
             shortHash: opts.shortHash || true,
             pathPrefix: opts.pathPrefix || '/',
             maxAgeNonHashed: opts.maxAgeNonHashed || 0,
-            sendOptions: opts.sendOptions || {}
+            sendOptions: opts.sendOptions || {},
+            rejectInvalidHash: opts.rejectInvalidHash || false
         };
 
         defaultOptions = Object.assign(defaultOptions, opts);
@@ -63,7 +64,10 @@ const staticify = (root, options) => {
             if (stat.isDirectory()) {
                 buildVersionHash(absFilePath, root, vers); // Whee!
             } else if (stat.isFile()) {
-                vers[`/${path.posix.relative(root, absFilePath)}`] = {absFilePath};
+                vers[`/${path.posix.relative(root, absFilePath)}`] = {
+                    absFilePath,
+                    hash: cachedMakeHash(absFilePath)
+                };
             }
         });
 
@@ -80,7 +84,7 @@ const staticify = (root, options) => {
 
         const fileName = path.basename(p);
         const fileNameParts = fileName.split('.');
-        const {absFilePath} = versions[p];
+        const { absFilePath } = versions[p];
         fileNameParts.push(cachedMakeHash(absFilePath), fileNameParts.pop());
 
         return path.posix.join(opts.pathPrefix, path.dirname(p), fileNameParts.join('.'));
@@ -109,10 +113,18 @@ const staticify = (root, options) => {
     };
 
     const serve = req => {
+        let originalRequest = url.parse(req.url).pathname;
+
         // eslint-disable-next-line node/no-deprecated-api
-        const filePath = stripVersion(url.parse(req.url).pathname);
+        const filePath = stripVersion(originalRequest);
         const sendOpts = filePath === req.url ? sendOptsNonVersioned : opts.sendOptions;
 
+        if (opts.rejectInvalidHash && versions[filePath] && !originalRequest.includes(versions[filePath]["hash"])) {
+            // pass the invalid requested hashed file to send
+            return send(req, originalRequest, sendOpts);
+        }
+
+        // send valid unhashed file
         return send(req, filePath, sendOpts);
     };
 
