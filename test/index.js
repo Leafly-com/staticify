@@ -18,7 +18,7 @@ describe('constructor', () => {
 
 describe('Options work', () => {
     it('`ignoreAll: false` works', () => {
-        const versions = staticify(ROOT, {includeAll: true})._versions;
+        const versions = staticify(ROOT, { includeAll: true })._versions;
         const matches = Object.keys(versions).filter(ver => ver.match(/node_modules|\.git/)).length > 0;
 
         matches.should.be.true();
@@ -32,8 +32,8 @@ describe('.stripVersion', () => {
     });
 
     it('should strip the (long) hash from a path when necessary', () => {
-        staticify(ROOT, {shortHash: false}).stripVersion(path.normalize('/script.4e2502b01a4c92b0a51b1a5a3271eab6.js')).should.equal(path.normalize('/script.js'));
-        staticify(ROOT, {shortHash: false}).stripVersion(path.normalize('/script.js')).should.equal(path.normalize('/script.js'));
+        staticify(ROOT, { shortHash: false }).stripVersion(path.normalize('/script.4e2502b01a4c92b0a51b1a5a3271eab6.js')).should.equal(path.normalize('/script.js'));
+        staticify(ROOT, { shortHash: false }).stripVersion(path.normalize('/script.js')).should.equal(path.normalize('/script.js'));
     });
 });
 
@@ -50,7 +50,7 @@ describe('.getVersionedPath', () => {
     });
 
     it('should add a long hash to the path', () => {
-        let versioned = staticify(ROOT, {shortHash: false}).getVersionedPath('/index.js');
+        let versioned = staticify(ROOT, { shortHash: false }).getVersionedPath('/index.js');
 
         versioned = versioned.split('.');
         versioned.should.have.a.lengthOf(3);
@@ -61,7 +61,7 @@ describe('.getVersionedPath', () => {
     });
 
     it('should add a prefix route to the path', () => {
-        let versioned = staticify(ROOT, {pathPrefix: '/prefix'}).getVersionedPath('/index.js');
+        let versioned = staticify(ROOT, { pathPrefix: '/prefix' }).getVersionedPath('/index.js');
 
         versioned = versioned.split('.');
         versioned.should.have.a.lengthOf(3);
@@ -108,6 +108,13 @@ describe('.serve', () => {
             });
         });
 
+        it('should reject files with an mismatched hash', done => {
+            http.get('http://localhost:12321/index.3dcd54b.js', res => {
+                res.statusCode.should.equal(404);
+                done();
+            });
+        });
+
         it('should 404 correctly', done => {
             http.get('http://localhost:12321/non.existant.file.js', res => {
                 res.statusCode.should.equal(404);
@@ -120,7 +127,7 @@ describe('.serve', () => {
         let server;
 
         before(done => {
-            const staticifyObj = staticify(ROOT, {shortHash: false});
+            const staticifyObj = staticify(ROOT, { shortHash: false });
             server = http.createServer((req, res) => {
                 staticifyObj.serve(req).pipe(res);
             });
@@ -230,7 +237,7 @@ describe('.replacePaths', () => {
     });
 
     it('should replace paths in a string (long)', () => {
-        const results = staticify(ROOT, {shortHash: false}).replacePaths('body { background: url(\'/index.js\') }');
+        const results = staticify(ROOT, { shortHash: false }).replacePaths('body { background: url(\'/index.js\') }');
 
         results.should.startWith('body { background: url(\'/index.');
         results.should.endWith('\') }');
@@ -261,7 +268,7 @@ describe('.replacePaths', () => {
     });
 
     it('should not mix up paths that are substrings of one another (long)', () => {
-        const results = staticify(ROOT, {shortHash: false}).replacePaths('/test/font.woff;/test/font.woff2;/test/font.woff');
+        const results = staticify(ROOT, { shortHash: false }).replacePaths('/test/font.woff;/test/font.woff2;/test/font.woff');
         const lines = results.split(';');
 
         lines[0].should.equal(lines[2]);
