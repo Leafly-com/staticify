@@ -157,6 +157,7 @@ describe('.serve', () => {
 
     describe('custom serve options', () => {
         let server;
+        let hashedFilename;
 
         before(done => {
             const staticifyObj = staticify(ROOT, {
@@ -166,7 +167,10 @@ describe('.serve', () => {
                 },
                 rejectInvalidHash: true
             });
-            server = http.createServer((req, res) => {
+
+            hashedFilename = staticifyObj.getVersionedPath('/index.js');
+
+            const server = http.createServer((req, res) => {
                 staticifyObj.serve(req).pipe(res);
             });
             server.listen(12321, done);
@@ -185,7 +189,7 @@ describe('.serve', () => {
         });
 
         it('should serve files with a hash tag', done => {
-            http.get('http://localhost:12321/index.4e2502b.js', res => {
+            http.get(`http://localhost:12321${hashedFilename}`, res => {
                 res.headers['cache-control'].includes('max-age=3600').should.be.true();
                 res.statusCode.should.equal(200);
                 done();
