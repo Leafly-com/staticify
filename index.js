@@ -84,7 +84,7 @@ const staticify = (root, options) => {
 
         const fileName = path.basename(p);
         const fileNameParts = fileName.split('.');
-        const { absFilePath } = versions[p];
+        const {absFilePath} = versions[p];
         fileNameParts.push(cachedMakeHash(absFilePath), fileNameParts.pop());
 
         return path.posix.join(opts.pathPrefix, path.dirname(p), fileNameParts.join('.'));
@@ -113,13 +113,13 @@ const staticify = (root, options) => {
     };
 
     const serve = req => {
-        let originalRequest = url.parse(req.url).pathname;
-
         // eslint-disable-next-line node/no-deprecated-api
+        const originalRequest = url.parse(req.url).pathname;
+
         const filePath = stripVersion(originalRequest);
         const sendOpts = filePath === req.url ? sendOptsNonVersioned : opts.sendOptions;
 
-        if (opts.rejectInvalidHash && versions[filePath] && !originalRequest.includes(versions[filePath]["hash"])) {
+        if (opts.rejectInvalidHash && versions[filePath] && !originalRequest.includes(versions[filePath].hash)) {
             // pass the invalid requested hashed file to send
             return send(req, originalRequest, sendOpts);
         }
