@@ -170,7 +170,7 @@ describe('.serve', () => {
 
             hashedFilename = staticifyObj.getVersionedPath('/index.js');
 
-            const server = http.createServer((req, res) => {
+            server = http.createServer((req, res) => {
                 staticifyObj.serve(req).pipe(res);
             });
             server.listen(12321, done);
