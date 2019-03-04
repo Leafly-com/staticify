@@ -17,9 +17,16 @@ describe('constructor', () => {
 });
 
 describe('Options work', () => {
-    it('`ignoreAll: false` works', () => {
-        const versions = staticify(ROOT, {includeAll: true})._versions;
-        const matches = Object.keys(versions).filter(ver => ver.match(/node_modules|\.git/)).length > 0;
+    it('`includeAll` is false by default', () => {
+        const versions = staticify(ROOT)._versions;
+        const matches = Object.keys(versions).filter(ver => ver.match(/^\/node_modules|^\/\.git\//)).length > 0;
+
+        matches.should.be.false();
+    });
+
+    it('`includeAll: true` works', () => {
+        const versions = staticify(`${ROOT}/node_modules/mocha`, {includeAll: true})._versions;
+        const matches = Object.keys(versions).filter(ver => ver.match(/^\/node_modules|^\/\.git\//)).length > 0;
 
         matches.should.be.true();
     });
